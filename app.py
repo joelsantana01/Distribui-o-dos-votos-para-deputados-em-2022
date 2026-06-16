@@ -216,7 +216,6 @@ with map_col:
     ja_aplicou = st.session_state.get("filtros_aplicados", False)
 
     if not ja_aplicou:
-        # Carregamento inicial — só bordas
         fig_map = go.Figure(go.Choropleth(
             geojson=mapa_plot.geometry.__geo_interface__,
             locations=mapa_plot.index,
@@ -230,7 +229,6 @@ with map_col:
             customdata=mapa_plot["territorio_identidade"].values,
         ))
     else:
-        # Após aplicar filtros — colorido por quartis
         fig_map = px.choropleth(
             mapa_plot, geojson=mapa_plot.geometry, locations=mapa_plot.index,
             color="faixa",
@@ -290,7 +288,7 @@ with map_col:
         geo_bgcolor=CINZA_BG,
         showlegend=False,
     )
-    st.plotly_chart(fig_map, use_container_width=True)
+    st.plotly_chart(fig_map, use_container_width=True, key="mapa_principal")
 
 with stats_col:
     st.markdown('<p class="section-title">Legenda — quartis de votos</p>', unsafe_allow_html=True)
@@ -326,12 +324,12 @@ with stats_col:
         st.markdown('<p class="section-title">Top 3 — Deputado Estadual</p>', unsafe_allow_html=True)
         top3_est = (f_estadual.groupby("nm_urna_candidato")["qt_votos_nom_validos"]
                     .sum().nlargest(3).reset_index())
-        for i, row in top3_est.iterrows():
+        for i, row in enumerate(top3_est.itertuples()):
             medalha = ["🥇", "🥈", "🥉"][i]
             st.markdown(f"""
             <div class="ql-box" style="flex-direction: column; align-items: flex-start; gap: 2px;">
-              <span class="ql-label"><b>{medalha} {row['nm_urna_candidato']}</b></span>
-              <span class="ql-range">{row['qt_votos_nom_validos']:,.0f} votos</span>
+              <span class="ql-label"><b>{medalha} {row.nm_urna_candidato}</b></span>
+              <span class="ql-range">{row.qt_votos_nom_validos:,.0f} votos</span>
             </div>""", unsafe_allow_html=True)
 
     # ---- Top 3 Deputado Federal ----
@@ -339,13 +337,14 @@ with stats_col:
         st.markdown('<p class="section-title">Top 3 — Deputado Federal</p>', unsafe_allow_html=True)
         top3_fed = (f_federal.groupby("nm_urna_candidato")["qt_votos_nom_validos"]
                     .sum().nlargest(3).reset_index())
-        for i, row in top3_fed.iterrows():
+        for i, row in enumerate(top3_fed.itertuples()):
             medalha = ["🥇", "🥈", "🥉"][i]
             st.markdown(f"""
             <div class="ql-box" style="flex-direction: column; align-items: flex-start; gap: 2px;">
-              <span class="ql-label"><b>{medalha} {row['nm_urna_candidato']}</b></span>
-              <span class="ql-range">{row['qt_votos_nom_validos']:,.0f} votos</span>
+              <span class="ql-label"><b>{medalha} {row.nm_urna_candidato}</b></span>
+              <span class="ql-range">{row.qt_votos_nom_validos:,.0f} votos</span>
             </div>""", unsafe_allow_html=True)
+
 # ============================================================
 # Função auxiliar para gráficos de barra
 # ============================================================
@@ -377,12 +376,12 @@ col1, col2 = st.columns(2)
 top_estadual = (f_estadual.groupby("nm_urna_candidato")["qt_votos_nom_validos"]
                 .sum().nlargest(5).reset_index())
 col1.plotly_chart(bar_chart(top_estadual, "qt_votos_nom_validos", "nm_urna_candidato",
-                              "Deputado Estadual"), use_container_width=True)
+                              "Deputado Estadual"), use_container_width=True, key="top5_estadual")
 
 top_federal = (f_federal.groupby("nm_urna_candidato")["qt_votos_nom_validos"]
                .sum().nlargest(5).reset_index())
 col2.plotly_chart(bar_chart(top_federal, "qt_votos_nom_validos", "nm_urna_candidato",
-                              "Deputado Federal"), use_container_width=True)
+                              "Deputado Federal"), use_container_width=True, key="top5_federal")
 
 st.divider()
 
@@ -400,10 +399,10 @@ top10_est = (top10_base[top10_base["ds_cargo"] == "Deputado Estadual"]
              .groupby("nm_urna_candidato")["qt_votos_nom_validos"]
              .sum().nlargest(10).reset_index())
 col3.plotly_chart(bar_chart(top10_est, "qt_votos_nom_validos", "nm_urna_candidato",
-                              "Deputado Estadual"), use_container_width=True)
+                              "Deputado Estadual"), use_container_width=True, key="top10_estadual")
 
 top10_fed = (top10_base[top10_base["ds_cargo"] == "Deputado Federal"]
              .groupby("nm_urna_candidato")["qt_votos_nom_validos"]
              .sum().nlargest(10).reset_index())
 col4.plotly_chart(bar_chart(top10_fed, "qt_votos_nom_validos", "nm_urna_candidato",
-                              "Deputado Federal"), use_container_width=True)
+                              "Deputado Federal"), use_container_width=True, key="top10_federal")
