@@ -321,19 +321,31 @@ with stats_col:
     st.metric("Cargo", _cargo)
     st.metric("Candidato", _candidato)
 
-    if not f_federal.empty:
-        soma_fed = f_federal.groupby("nm_urna_candidato")["qt_votos_nom_validos"].sum()
-        st.metric("Dep. Federal mais votado", soma_fed.idxmax(),
-                  f"{soma_fed.max():,.0f}".replace(",", ".") + " votos")
-
+    # ---- Top 3 Deputado Estadual ----
     if not f_estadual.empty:
-        soma_est = f_estadual.groupby("nm_urna_candidato")["qt_votos_nom_validos"].sum()
-        st.metric("Dep. Estadual mais votado", soma_est.idxmax(),
-                  f"{soma_est.max():,.0f}".replace(",", ".") + " votos")
+        st.markdown('<p class="section-title">Top 3 — Deputado Estadual</p>', unsafe_allow_html=True)
+        top3_est = (f_estadual.groupby("nm_urna_candidato")["qt_votos_nom_validos"]
+                    .sum().nlargest(3).reset_index())
+        for i, row in top3_est.iterrows():
+            medalha = ["🥇", "🥈", "🥉"][i]
+            st.markdown(f"""
+            <div class="ql-box" style="flex-direction: column; align-items: flex-start; gap: 2px;">
+              <span class="ql-label"><b>{medalha} {row['nm_urna_candidato']}</b></span>
+              <span class="ql-range">{row['qt_votos_nom_validos']:,.0f} votos</span>
+            </div>""", unsafe_allow_html=True)
 
-    st.metric("Candidatos na área", f_geo["nm_urna_candidato"].nunique())
-    st.metric("Municípios na área", f_geo["nm_municipio"].nunique())
-
+    # ---- Top 3 Deputado Federal ----
+    if not f_federal.empty:
+        st.markdown('<p class="section-title">Top 3 — Deputado Federal</p>', unsafe_allow_html=True)
+        top3_fed = (f_federal.groupby("nm_urna_candidato")["qt_votos_nom_validos"]
+                    .sum().nlargest(3).reset_index())
+        for i, row in top3_fed.iterrows():
+            medalha = ["🥇", "🥈", "🥉"][i]
+            st.markdown(f"""
+            <div class="ql-box" style="flex-direction: column; align-items: flex-start; gap: 2px;">
+              <span class="ql-label"><b>{medalha} {row['nm_urna_candidato']}</b></span>
+              <span class="ql-range">{row['qt_votos_nom_validos']:,.0f} votos</span>
+            </div>""", unsafe_allow_html=True)
 # ============================================================
 # Função auxiliar para gráficos de barra
 # ============================================================
